@@ -1,1 +1,5 @@
-from v1 import controller as v1_controller
+import urls
+
+
+def get_urls_as_dict():
+    return urls.create_urls()
