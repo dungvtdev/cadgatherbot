@@ -7,7 +7,6 @@ class MonitoringGatherAll(object):
         self.db_client = db_client
 
     def on_get(self, request, response, user_id, metric):
-        # response.status = falcon.HTTP_200
         pass
 
 
