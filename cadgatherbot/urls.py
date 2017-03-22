@@ -1,4 +1,4 @@
-from api.v1 import proxy_collector as proxy_collector_v1
+from api.v1 import monitoring_resource as monitoring_resource_v1
 from exceptions import *
 
 
@@ -17,6 +17,6 @@ def create_urls():
 
     # v1
     v1 = '/api/v1/'
-    populateResource(url_dict, v1, proxy_collector_v1)
+    populateResource(url_dict, v1, monitoring_resource_v1)
 
     return url_dict
