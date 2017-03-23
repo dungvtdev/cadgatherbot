@@ -63,5 +63,5 @@ class MonitoringGather(object):
 routes_map = {
     'resources_monitoring/users/{user_id}':
         MonitoringGather(
-            SimpleDictDataSource(config.DATA), InfluxdbDataDriver()),
+            SimpleDictDataSource(config.DATA), InfluxdbDataDriver(None)),
 }

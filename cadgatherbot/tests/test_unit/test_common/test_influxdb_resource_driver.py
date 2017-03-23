@@ -9,7 +9,7 @@ from cadgatherbot.common.influxdb_driver import InfluxdbDataDriver
 class TestInfluxdbResources(object):
 
     def setUp(self):
-        self.influx = InfluxdbDataDriver()
+        self.influx = InfluxdbDataDriver(None)
 
     def tearDown(self):
         del self.influx
@@ -37,3 +37,10 @@ class TestInfluxdbResources(object):
         secondOut = 'cpu' not in queries[1]
 
         assert_true(firstIn and secondOut)
+
+    def test_link_generate(self):
+        self.influx.setting(protocol='http')
+
+        link = self.influx.get_link("localhost:3000", "test_query")
+
+        assert_in('http://localhost:3000/query?', link)

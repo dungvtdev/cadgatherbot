@@ -1,3 +1,4 @@
+import falcon
 import re
 from cadgatherbot.utils.dbdriver.resources import BaseResourcesDataDriver
 
@@ -6,6 +7,7 @@ class InfluxdbDataDriver(BaseResourcesDataDriver):
     epoch = 's'
     time_filter = '>10m'
     time_interval = '2s'
+    db_name = ""
 
     _time_filter_string = ""
 
@@ -23,12 +25,21 @@ class InfluxdbDataDriver(BaseResourcesDataDriver):
             self._time_filter_string = self.get_timefilter_string()
         if 'time_interval' in kwargv:
             self.time_interval = kwargv['time_interval']
+        if 'db_name' in kwargv:
+            self.db_name = kwargv['db_name']
 
     def query(self, endpoint, metric):
         queries = self.get_queries(metric)
 
-    def get_link(endpoint, query):
-        pass
+    def get_link(self, endpoint, query):
+        param_dict = {
+            'epoch': self.epoch,
+            'db': self.db_name,
+            'q': query
+        }
+        link = "{endpoint}/query{params}".format(endpoint=self.protocol_decorate(endpoint),
+                                                params=falcon.to_query_str(param_dict, False, True))
+        return link
 
     def get_queries(self, metric):
         # split cpu measurements
