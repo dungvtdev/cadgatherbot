@@ -1,6 +1,12 @@
 import falcon
+from eventlet.green import urllib2
+
 import re
 from cadgatherbot.utils.dbdriver.resources import BaseResourcesDataDriver
+
+
+def fetchUrl(url, timeout=10):
+    return urllib2.urlopen(url).read()
 
 
 class InfluxdbDataDriver(BaseResourcesDataDriver):
@@ -30,6 +36,10 @@ class InfluxdbDataDriver(BaseResourcesDataDriver):
 
     def query(self, endpoint, metric):
         queries = self.get_queries(metric)
+        links = [map(lambda q: self.get_link(endpoint, q), queries)]
+
+        for body in self.pool.imap(fetchUrl, links):
+            print("got body", len(body))
 
     def get_link(self, endpoint, query):
         param_dict = {
@@ -38,7 +48,7 @@ class InfluxdbDataDriver(BaseResourcesDataDriver):
             'q': query
         }
         link = "{endpoint}/query{params}".format(endpoint=self.protocol_decorate(endpoint),
-                                                params=falcon.to_query_str(param_dict, False, True))
+                                                 params=falcon.to_query_str(param_dict, False, True))
         return link
 
     def get_queries(self, metric):

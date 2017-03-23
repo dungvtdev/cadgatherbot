@@ -31,3 +31,4 @@ class TestProxyCollectorEntry(baseTest.TestBase):
 
     def tearDown(self):
         super(TestProxyCollectorEntry, self).tearDown()
+

@@ -1,4 +1,6 @@
 import falcon
+from cadgatherbot.resources import coreThreadPool
+
 import json
 
 from cadgatherbot import config
@@ -34,7 +36,7 @@ class MonitoringController(object):
         if(not metric_str):
             return []
 
-        return map(lambda x: tuple(x.split('.')), metric_str.split(','))
+        return map(lambda x: tuple(x.strip().split('.')), metric_str.split(','))
 
     def post_process_resources_data(self, metric, data):
         return data
@@ -60,8 +62,14 @@ class MonitoringGather(object):
         self.controller.get(req, resp, user_id, machine_id, metric)
 
 
+_user_db = SimpleDictDataSource(config.DATA)
+_resource_db = InfluxdbDataDriver(
+    coreThreadPool,
+    epoch=config.RESOURCE_DATA_EPOCH,
+    time_filter='>' + config.RESOURCE_DATA_CHUNK_DURATION,
+    time_interval=str(config.INTERVAL_SERIES_IN_SECOND) + 's',
+    db_name=config.RESOURCE_DATA_DBNAME)
+
 routes_map = {
-    'resources_monitoring/users/{user_id}':
-        MonitoringGather(
-            SimpleDictDataSource(config.DATA), InfluxdbDataDriver(None)),
+    'resources_monitoring/users/{user_id}': MonitoringGather(_user_db, _resource_db)
 }
