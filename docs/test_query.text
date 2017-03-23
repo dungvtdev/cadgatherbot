@@ -1,0 +1,6 @@
+"SELECT derivative(\"value\", 5s)/1000000000 FROM \"" + measure_str +"\""+
+                        " WHERE time > now() - " + timeFilter+
+                        " GROUP BY \"container_name\" fill(null)");
+
+select derivative("value", 5s)/1000000000 from cpu_usage_total, cpu_usage_system where
+time > now - 1h group by container_name fill(null)

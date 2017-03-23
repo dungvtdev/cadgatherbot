@@ -3,6 +3,7 @@ import json
 
 from cadgatherbot import config
 from cadgatherbot.utils.dbdriver.simpledictdb import SimpleDictDataSource
+from cadgatherbot.common.influxdb_driver import InfluxdbDataDriver
 
 
 class MonitoringController(object):
@@ -12,15 +13,31 @@ class MonitoringController(object):
         self.resource_db = resource_db
 
     def get(self, req, resp, user_id, machine_id, metric_str):
-        metric = self.parseMetric(metric_str)
-        resp.body = "heheheh"
+        metric = self.parse_metric(metric_str)
+        info = self.user_db.query('endpoint').key(
+            'users', user_id).key('machines', '1').run()
+        if not info:
+            raise falcon.HTTP_BAD_REQUEST(
+                'Database not found user_id {1}and machine_id {2}'.format(user_id, machine_id))
 
-    def parseMetric(self, metric_str):
+        endpoint = info['endpoint']
+
+        result = self.resource_db.query(endpoint,
+                                        metric)
+
+        data = self.post_process_resources_data(metric, result)
+
+        resp.body = data
+
+    def parse_metric(self, metric_str):
         # hien tai chi ho tro 1 sub partial, ex "cpu_usage_total./docker"
         if(not metric_str):
             return []
 
         return map(lambda x: tuple(x.split('.')), metric_str.split(','))
+
+    def post_process_resources_data(self, metric, data):
+        return data
 
 
 class MonitoringGather(object):
@@ -45,5 +62,6 @@ class MonitoringGather(object):
 
 routes_map = {
     'resources_monitoring/users/{user_id}':
-        MonitoringGather(SimpleDictDataSource(config.DATA), None),
+        MonitoringGather(
+            SimpleDictDataSource(config.DATA), InfluxdbDataDriver()),
 }

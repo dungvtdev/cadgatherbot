@@ -1,4 +1,4 @@
-from api.v1 import monitoring_resource as monitoring_resource_v1
+from cadgatherbot.api.v1 import monitoring_resource as monitoring_resource_v1
 from exceptions import *
 
 

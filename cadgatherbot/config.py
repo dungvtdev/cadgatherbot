@@ -1,5 +1,7 @@
 INTERVAL_SERIES_IN_SECOND = 2
 
+MONITORING_RESOURCE_DBNAME = 'cadvisor'
+
 CONTROLLER_DB = {
     'engine': 'config',
 }

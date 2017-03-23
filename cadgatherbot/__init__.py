@@ -1,4 +1,4 @@
-import urls
+from . import urls
 
 
 def get_urls_as_dict():
