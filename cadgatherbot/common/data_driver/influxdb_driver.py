@@ -2,7 +2,7 @@ import falcon
 from eventlet.green import urllib2
 
 import re
-from cadgatherbot.utils.dbdriver.resources import BaseResourcesDataDriver
+from cadgatherbot.utils.dbdriver import BaseResourcesDBDriver
 
 
 def fetchUrl(url):
@@ -13,7 +13,7 @@ def fetchUrl(url):
         return None
 
 
-class InfluxdbDataDriver(BaseResourcesDataDriver):
+class InfluxdbDataDriver(BaseResourcesDBDriver):
     epoch = 's'
     time_filter = '>10m'
     time_interval = '2s'

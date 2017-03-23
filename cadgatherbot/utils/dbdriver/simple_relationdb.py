@@ -1,7 +1,7 @@
-from . import base
+from . import base_relationdb as base
 
 
-class SimpleDictDataSource(base.DatasourceBase):
+class SimpleDictDBDriver(base.BaseRelationDBDriver):
 
     def __init__(self, dict=None, **kargv):
         super(SimpleDictDataSource, self).__init__(dict=dict, **kargv)

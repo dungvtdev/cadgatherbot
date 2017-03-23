@@ -1,4 +1,4 @@
-class DatasourceBase(object):
+class BaseRelationDBDriver(object):
 
     def __init__(self, **kargv):
         pass

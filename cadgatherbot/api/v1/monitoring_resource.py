@@ -5,7 +5,7 @@ import json
 
 from cadgatherbot import config
 from cadgatherbot.utils.dbdriver.simpledictdb import SimpleDictDataSource
-from cadgatherbot.common.influxdb_driver import InfluxdbDataDriver
+from cadgatherbot.common.data_driver import InfluxdbDataDriver
 
 
 class MonitoringController(object):

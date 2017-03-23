@@ -1,4 +1,4 @@
-class BaseResourcesDataDriver(object):
+class BaseResourcesDBDriver(object):
     protocol = None
 
     def __init__(self, **kwargv):

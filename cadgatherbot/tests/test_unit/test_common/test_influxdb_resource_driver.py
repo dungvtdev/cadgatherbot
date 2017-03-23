@@ -3,7 +3,7 @@ from nose.tools import assert_not_equal
 from nose.tools import assert_in
 from nose.tools import assert_true
 
-from cadgatherbot.common.influxdb_driver import InfluxdbDataDriver
+from cadgatherbot.common.data_driver import InfluxdbDataDriver
 
 
 class TestInfluxdbResources(object):
