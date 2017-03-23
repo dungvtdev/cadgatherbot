@@ -16,15 +16,17 @@ class MonitoringController(object):
 
     def get(self, req, resp, user_id, machine_id, metric_str):
         metric = self.parse_metric(metric_str)
-        info = self.user_db.query('endpoint').key(
-            'users', user_id).key('machines', '1').run()
+        info = self.user_db.query('endpoint', 'db').key(
+            'users', user_id).key('machines', machine_id).run()
         if not info:
             raise falcon.HTTP_BAD_REQUEST(
                 'Database not found user_id {1}and machine_id {2}'.format(user_id, machine_id))
 
         endpoint = info['endpoint']
+        db = info['db']
 
         result = self.resource_db.query(endpoint,
+                                        db,
                                         metric)
 
         data = self.post_process_resources_data(metric, result)

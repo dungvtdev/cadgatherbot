@@ -5,15 +5,18 @@ import re
 from cadgatherbot.utils.dbdriver.resources import BaseResourcesDataDriver
 
 
-def fetchUrl(url, timeout=10):
-    return urllib2.urlopen(url).read()
+def fetchUrl(url):
+    try:
+        return urllib2.urlopen(url).read()
+    except (urllib2.URLError, urllib2.HTTPError):
+        print("Connection Refuse: URL {0}.".format(url))
+        return None
 
 
 class InfluxdbDataDriver(BaseResourcesDataDriver):
     epoch = 's'
     time_filter = '>10m'
     time_interval = '2s'
-    db_name = ""
 
     _time_filter_string = ""
 
@@ -31,20 +34,21 @@ class InfluxdbDataDriver(BaseResourcesDataDriver):
             self._time_filter_string = self.get_timefilter_string()
         if 'time_interval' in kwargv:
             self.time_interval = kwargv['time_interval']
-        if 'db_name' in kwargv:
-            self.db_name = kwargv['db_name']
 
-    def query(self, endpoint, metric):
+    def query(self, endpoint, db_name, metric):
         queries = self.get_queries(metric)
-        links = [map(lambda q: self.get_link(endpoint, q), queries)]
+        links = map(lambda q: falcon.uri.encode(
+            self.get_link(endpoint, db_name, q)), queries)
 
+        # print(links)
         for body in self.pool.imap(fetchUrl, links):
-            print("got body", len(body))
+            if(body):
+                print("got body", len(body))
 
-    def get_link(self, endpoint, query):
+    def get_link(self, endpoint, db_name, query):
         param_dict = {
             'epoch': self.epoch,
-            'db': self.db_name,
+            'db': db_name,
             'q': query
         }
         link = "{endpoint}/query{params}".format(endpoint=self.protocol_decorate(endpoint),

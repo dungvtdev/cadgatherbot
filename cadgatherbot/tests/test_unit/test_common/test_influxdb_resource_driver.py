@@ -41,6 +41,7 @@ class TestInfluxdbResources(object):
     def test_link_generate(self):
         self.influx.setting(protocol='http')
 
-        link = self.influx.get_link("localhost:3000", "test_query")
+        link = self.influx.get_link("localhost:3000", "cadvisor", "test_query")
 
         assert_in('http://localhost:3000/query?', link)
+        assert_in('db=cadvisor', link)

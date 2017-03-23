@@ -4,7 +4,11 @@ if __name__ == '__main__':
     client = res.MonitoringController(res._user_db, res._resource_db)
 
     req = {}
-    resp = {'body': ""}
+
+    class FakeResp():
+        body = ""
+
+    resp = FakeResp()
     user_id = '1'
     machine_id = '1'
     metric_str = 'cpu_usage_total,cpu_usage_system'

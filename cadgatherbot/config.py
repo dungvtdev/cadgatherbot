@@ -18,7 +18,9 @@ DATA = {
     'users': {
         '1': {
             'machines': {
-                '1': {'endpoint': "localhost:3000"}
+                '1': {
+                    'endpoint': "localhost:3000",
+                    'db': 'cadvisor'}
             }
         }
     }
