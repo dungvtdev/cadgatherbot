@@ -11,5 +11,6 @@ if __name__ == '__main__':
     resp = FakeResp()
     user_id = '1'
     machine_id = '1'
-    metric_str = 'cpu_usage_total,cpu_usage_system'
+    # metric_str = 'cpu_usage_total,cpu_usage_system'
+    metric_str = ''
     client.get(req, resp, user_id, machine_id, metric_str)

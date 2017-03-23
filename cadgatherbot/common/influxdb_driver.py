@@ -37,6 +37,9 @@ class InfluxdbDataDriver(BaseResourcesDataDriver):
 
     def query(self, endpoint, db_name, metric):
         queries = self.get_queries(metric)
+        if not queries:
+            return None
+
         links = map(lambda q: falcon.uri.encode(
             self.get_link(endpoint, db_name, q)), queries)
 
@@ -67,6 +70,9 @@ class InfluxdbDataDriver(BaseResourcesDataDriver):
         return queries
 
     def get_cpu_queries(self, cpu_metrics):
+        if not cpu_metrics:
+            return ()
+
         time_filter = self._time_filter_string
         measurements = ','.join(map(lambda x: x[0], cpu_metrics))
 
@@ -80,6 +86,9 @@ class InfluxdbDataDriver(BaseResourcesDataDriver):
         return (query,)
 
     def get_accum_queries(self, metrics):
+        if not metrics:
+            return ()
+
         time_filter = self._time_filter_string
         measurements = ','.join(map(lambda x: x[0], metrics))
         time_interval = self.time_interval
