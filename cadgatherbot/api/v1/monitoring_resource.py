@@ -69,8 +69,7 @@ _resource_db = InfluxdbDataDriver(
     coreThreadPool,
     epoch=config.RESOURCE_DATA_EPOCH,
     time_filter='>' + config.RESOURCE_DATA_CHUNK_DURATION,
-    time_interval=str(config.INTERVAL_SERIES_IN_SECOND) + 's',
-    db_name=config.RESOURCE_DATA_DBNAME)
+    time_interval=str(config.INTERVAL_SERIES_IN_SECOND) + 's')
 
 routes_map = {
     'resources_monitoring/users/{user_id}': MonitoringGather(_user_db, _resource_db)
