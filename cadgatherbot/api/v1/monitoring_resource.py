@@ -1,5 +1,5 @@
 import falcon
-from cadgatherbot.resources import coreThreadPool
+from cadgatherbot.services import InjectionManager as injector
 
 import json
 import re
@@ -9,6 +9,9 @@ from cadgatherbot.utils.dbdriver.simpledictdb import SimpleDictDataSource
 from cadgatherbot.common.data_driver import InfluxdbDataDriver
 
 import cadgatherbot.config as config
+
+
+(coreThreadPool,) = injector.inject('CORE_THREAD_POOL')
 
 
 class MonitoringController(object):
