@@ -55,7 +55,10 @@ class MonitoringController(object):
         return map(lambda x: tuple(x.strip().split('.')), metric)
 
     def post_process_resources_data(self, metric, data):
-        return json.dumps(data)
+        result = {
+            'data': data
+        }
+        return json.dumps(result)
 
 
 class MonitoringGather(object):
