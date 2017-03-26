@@ -5,6 +5,8 @@ import json
 import re
 from cadgatherbot.utils.dbdriver import BaseResourcesDBDriver
 
+import cadgatherbot.config as config
+
 
 def fetchUrl(url):
     try:
@@ -37,8 +39,13 @@ class InfluxdbDataDriver(BaseResourcesDBDriver):
         if 'time_interval' in kwargv:
             self.time_interval = kwargv['time_interval']
 
-    def query(self, endpoint, db_name, metric):
-        queries = self.get_queries(metric)
+    def query(self, endpoint, db_name, metric, last=None):
+        if last:
+            self._time_filter_string = self.get_timefilter_string('>' + last)
+            queries = self.get_queries(metric)
+        else:
+            queries = self.get_queries(metric)
+
         if not queries:
             return None
 
@@ -76,7 +83,8 @@ class InfluxdbDataDriver(BaseResourcesDBDriver):
                         c_container = None
                     else:
                         c_container = res['tags']['container_name']
-                        can_add = not result_item['container'] or result_item['container'] == c_container
+                        can_add = not result_item['container'] or result_item[
+                            'container'] == c_container
 
                     if can_add:
                         result_item['data'].append(res)
@@ -142,10 +150,9 @@ class InfluxdbDataDriver(BaseResourcesDBDriver):
 
         return (query, )
 
-    def get_timefilter_string(self):
-        default = '>10m'
+    def get_timefilter_string(self, default='>10m'):
         tf = self.time_filter or default
-        pattern = r'(^[><]*[=]*)\s*(\d*[smhd])$'
+        pattern = r'(^[><]*[=]*)\s*(\d+[%s])$' % config.TIME_FILTER_METRIC_ALLOWED
 
         match = re.match(pattern, tf)
         if not match:

@@ -4,6 +4,7 @@ RESOURCE_DATA_CHUNK_DURATION = '90s'
 
 RESOURCE_DATA_EPOCH = 's'
 
+TIME_FILTER_METRIC_ALLOWED = 'smhd'
 # CONTROLLER_DB = {
 #     'engine': 'config',
 # }

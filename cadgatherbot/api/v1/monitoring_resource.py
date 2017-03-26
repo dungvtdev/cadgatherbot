@@ -2,10 +2,13 @@ import falcon
 from cadgatherbot.resources import coreThreadPool
 
 import json
+import re
 
 from cadgatherbot import config
 from cadgatherbot.utils.dbdriver.simpledictdb import SimpleDictDataSource
 from cadgatherbot.common.data_driver import InfluxdbDataDriver
+
+import cadgatherbot.config as config
 
 
 class MonitoringController(object):
@@ -14,20 +17,23 @@ class MonitoringController(object):
         self.user_db = user_db
         self.resource_db = resource_db
 
-    def get(self, req, resp, user_id, machine_id, metric_str):
+    def get(self, req, resp, user_id, machine_id, metric_str, **kwarg):
+        last = None if 'last' not in kwarg else kwarg['last']
+
         metric = self.parse_metric(metric_str)
         info = self.user_db.query('endpoint', 'db').key(
             'users', user_id).key('machines', machine_id).run()
         if not info:
-            raise falcon.HTTP_BAD_REQUEST(
-                'Database not found user_id {1}and machine_id {2}'.format(user_id, machine_id))
+            raise falcon.HTTPBadRequest(
+                'Database not found user_id {0} and machine_id {1}'.format(user_id, machine_id))
 
         endpoint = info['endpoint']
         db = info['db']
 
         result = self.resource_db.query(endpoint,
                                         db,
-                                        metric)
+                                        metric,
+                                        last=last)
 
         data = self.post_process_resources_data(metric, result)
 
@@ -57,13 +63,19 @@ class MonitoringGather(object):
                 "Get resources monitoring need machine_id")
 
         machine_id = req.params['machine']
+        last = None if 'last' not in req.params else req.params['last']
 
-        if "metric" in req.params:
-            metric = req.params['metric']
+        if 'last' in req.params:
+            last = req.params['last']
+            if not re.match(r'^\d+[%s]$' % config.TIME_FILTER_METRIC_ALLOWED, last):
+                raise falcon.HTTPBadRequest(
+                    'The "last" params must match {number}[%s]' % config.TIME_FILTER_METRIC_ALLOWED)
         else:
-            metric = None
+            last = None
 
-        self.controller.get(req, resp, user_id, machine_id, metric)
+        metric = None if 'metric' not in req.params else req.params['metric']
+
+        self.controller.get(req, resp, user_id, machine_id, metric, last=last)
 
 
 _user_db = SimpleDictDataSource(config.DATA)
