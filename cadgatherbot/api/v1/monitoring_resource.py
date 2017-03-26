@@ -33,6 +33,8 @@ class MonitoringController(object):
 
         resp.body = data
 
+        return data
+
     def parse_metric(self, metric_str):
         # hien tai chi ho tro 1 sub partial, ex "cpu_usage_total./docker"
         if(not metric_str):
@@ -41,7 +43,7 @@ class MonitoringController(object):
         return map(lambda x: tuple(x.strip().split('.')), metric_str.split(','))
 
     def post_process_resources_data(self, metric, data):
-        return data
+        return json.dumps(data)
 
 
 class MonitoringGather(object):

@@ -1,6 +1,6 @@
 INTERVAL_SERIES_IN_SECOND = 2
 
-RESOURCE_DATA_CHUNK_DURATION = '10m'
+RESOURCE_DATA_CHUNK_DURATION = '90s'
 
 RESOURCE_DATA_EPOCH = 's'
 
@@ -17,7 +17,7 @@ DATA = {
         '1': {
             'machines': {
                 '1': {
-                    'endpoint': "localhost:3000",
+                    'endpoint': "192.168.122.76:8086",
                     'db': 'cadvisor'}
             }
         }

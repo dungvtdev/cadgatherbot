@@ -4,8 +4,7 @@ from eventlet.green import urllib2
 
 urls = [
     "http://www.google.com/intl/en_ALL/images/logo.gif",
-    "https://wiki.secondlife.com/w/images/secondlife.jpg",
-    "http://us.i1.yimg.com/us.yimg.com/i/ww/beta/y3.gif",
+    "http://192.168.122.76:8083/"
 ]
 
 

@@ -1,5 +1,6 @@
 import falcon
 from eventlet.green import urllib2
+import json
 
 import re
 from cadgatherbot.utils.dbdriver import BaseResourcesDBDriver
@@ -10,7 +11,8 @@ def fetchUrl(url):
         return urllib2.urlopen(url).read()
     except (urllib2.URLError, urllib2.HTTPError):
         print("Connection Refuse: URL {0}.".format(url))
-        return None
+    except Exception as e:
+        print("UnKnown Error " + e)
 
 
 class InfluxdbDataDriver(BaseResourcesDBDriver):
@@ -44,9 +46,46 @@ class InfluxdbDataDriver(BaseResourcesDBDriver):
             self.get_link(endpoint, db_name, q)), queries)
 
         # print(links)
+        json_list = []
         for body in self.pool.imap(fetchUrl, links):
             if(body):
-                print("got body", len(body))
+                json_list.append(body)
+
+        return self.combine(json_list, metric)
+
+    def combine(self, json_list, metric):
+
+        # create container object
+        result = {}
+        for m in metric:
+            result[m[0]] = {
+                'container': None if len(m) == 1 else m[1],
+                'data': []
+            }
+
+        for json_obj in json_list:
+            p_obj = json.loads(json_obj)
+            res_list = p_obj['results'][0]['series']
+            for res in res_list:
+                lname = res['name']
+                if lname in result:
+                    result_item = result[lname]
+                    # xet ca truong hop khong co tags cua mot so measurement
+                    if 'tags' not in res:
+                        can_add = True
+                        c_container = None
+                    else:
+                        c_container = res['tags']['container_name']
+                        can_add = not result_item['container'] or result_item['container'] == c_container
+
+                    if can_add:
+                        result_item['data'].append(res)
+                        res['container'] = c_container
+                        map(res.pop, ['name', 'columns'])
+                        if 'tags' in res:
+                            res.pop('tags')
+
+        return result
 
     def get_link(self, endpoint, db_name, query):
         param_dict = {
@@ -112,4 +151,22 @@ class InfluxdbDataDriver(BaseResourcesDBDriver):
         if not match:
             match = re.match(pattern, default)
 
-        return 'now() ' + match.groups()[0] + " " + match.groups()[1]
+        return 'time ' + match.groups()[0] + " now() - " + match.groups()[1]
+
+
+# class ResourceData(object):
+#     measurement = None,
+#     container = None,
+#     values = []
+#     isAll = True
+
+#     def __init__(self, measurement, container='all'):
+#         self.measurement = measurement
+#         self.container = container
+#         self.isAll = self.container == 'all'
+
+#     def add(self, influxdb_dict):
+#         c_container = influxdb_dict['tags']['container_name']
+#         if self.isAll or self.container == c_container:
+#             influxdb_dict['container'] = c_container
+#             map(influxdb_dict.pop, ['name', 'tags', 'columns'])
