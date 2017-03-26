@@ -17,10 +17,10 @@ class MonitoringController(object):
         self.user_db = user_db
         self.resource_db = resource_db
 
-    def get(self, req, resp, user_id, machine_id, metric_str, **kwarg):
+    def get(self, req, resp, user_id, machine_id, metric, **kwarg):
         last = None if 'last' not in kwarg else kwarg['last']
 
-        metric = self.parse_metric(metric_str)
+        metric = self.parse_metric(metric)
         info = self.user_db.query('endpoint', 'db').key(
             'users', user_id).key('machines', machine_id).run()
         if not info:
@@ -41,12 +41,15 @@ class MonitoringController(object):
 
         return data
 
-    def parse_metric(self, metric_str):
+    def parse_metric(self, metric):
         # hien tai chi ho tro 1 sub partial, ex "cpu_usage_total./docker"
-        if(not metric_str):
+        if(not metric):
             return []
 
-        return map(lambda x: tuple(x.strip().split('.')), metric_str.split(','))
+        if not isinstance(metric, list):
+            metric = [metric, ]
+
+        return map(lambda x: tuple(x.strip().split('.')), metric)
 
     def post_process_resources_data(self, metric, data):
         return json.dumps(data)
@@ -76,7 +79,6 @@ class MonitoringGather(object):
         metric = None if 'metric' not in req.params else req.params['metric']
 
         self.controller.get(req, resp, user_id, machine_id, metric, last=last)
-
 
 _user_db = SimpleDictDataSource(config.DATA)
 _resource_db = InfluxdbDataDriver(

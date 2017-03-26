@@ -12,7 +12,7 @@ class TestMonitoringResourceController(object):
         del self.controller
 
     def test_parse_metric(self):
-        m = 'cpu./ , cpu./user '
+        m = ['cpu./', 'cpu./user ']
         metrics = self.controller.parse_metric(m)
 
         assert_equal('cpu', metrics[0][0])
