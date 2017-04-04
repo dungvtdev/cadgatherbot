@@ -4,7 +4,7 @@ from . import base_relationdb as base
 class SimpleDictDBDriver(base.BaseRelationDBDriver):
 
     def __init__(self, dict=None, **kargv):
-        super(SimpleDictDataSource, self).__init__(dict=dict, **kargv)
+        super(SimpleDictDBDriver, self).__init__(**kargv)
         self.dict = dict
 
     def run(self, query_list, query_keys):

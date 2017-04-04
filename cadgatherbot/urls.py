@@ -1,5 +1,5 @@
 from cadgatherbot.api.v1 import monitoring_resource as monitoring_resource_v1
-from exceptions import *
+from cadgatherbot.exceptions import *
 
 
 def populateResource(url_dict, prefix_version, resource):

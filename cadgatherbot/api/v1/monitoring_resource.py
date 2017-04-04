@@ -5,7 +5,7 @@ import json
 import re
 
 from cadgatherbot import config
-from cadgatherbot.utils.dbdriver.simpledictdb import SimpleDictDataSource
+from cadgatherbot.utils.dbdriver.simple_relationdb import SimpleDictDBDriver
 from cadgatherbot.common.data_driver import InfluxdbDataDriver
 
 import cadgatherbot.config as config
@@ -86,7 +86,7 @@ class MonitoringGather(object):
 
         self.controller.get(req, resp, user_id, machine_id, metric, last=last)
 
-_user_db = SimpleDictDataSource(config.DATA)
+_user_db = SimpleDictDBDriver(config.DATA)
 _resource_db = InfluxdbDataDriver(
     coreThreadPool,
     epoch=config.RESOURCE_DATA_EPOCH,

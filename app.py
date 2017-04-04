@@ -1,8 +1,6 @@
 import falcon
 import cadgatherbot as api
 
-from cadgatherbot.utils.dbdriver.simpledictdb import SimpleDictDataSource
-
 app = application = falcon.API()
 
 urls_dict = api.get_urls_as_dict()

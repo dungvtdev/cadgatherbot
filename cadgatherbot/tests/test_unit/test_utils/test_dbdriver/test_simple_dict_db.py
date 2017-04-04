@@ -1,4 +1,4 @@
-from cadgatherbot.utils.dbdriver.simpledictdb import SimpleDictDataSource
+from cadgatherbot.utils.dbdriver.simple_relationdb import SimpleDictDBDriver
 
 from nose.tools import assert_equal
 from nose.tools import assert_not_equal
@@ -17,7 +17,7 @@ DATA = {
 class Testdb(object):
 
     def setUp(self):
-        self.db = SimpleDictDataSource(DATA)
+        self.db = SimpleDictDBDriver(DATA)
 
     def teardown(self):
         del self.db
