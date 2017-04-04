@@ -18,8 +18,8 @@ DATA = {
         '1': {
             'machines': {
                 '1': {
-                    'endpoint': "192.168.122.76:8086",
-                    'db': 'test_cadgather'}
+                    'endpoint': "192.168.122.121:8086",
+                    'db': 'cadvisor'}
             }
         }
     }
