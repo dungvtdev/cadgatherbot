@@ -8,7 +8,7 @@ class BaseResourcesDBDriver(object):
         if 'protocol' in kwargv:
             self.protocol = kwargv['protocol']
 
-    def query(endpoint, db_name, metric):
+    def query(self, endpoint, db_name, metric, **kwargs):
         raise NotImplementedError(
             'Method query of BaseInfluxdb must be inplemented')
 

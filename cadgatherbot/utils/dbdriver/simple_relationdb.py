@@ -3,9 +3,9 @@ from . import base_relationdb as base
 
 class SimpleDictDBDriver(base.BaseRelationDBDriver):
 
-    def __init__(self, dict=None, **kargv):
+    def __init__(self, database=None, **kargv):
         super(SimpleDictDBDriver, self).__init__(**kargv)
-        self.dict = dict
+        self.dict = database
 
     def run(self, query_list, query_keys):
         cur = self.dict
@@ -15,12 +15,12 @@ class SimpleDictDBDriver(base.BaseRelationDBDriver):
                 continue
             return None
 
-        if(not query_keys):
+        if not query_keys:
             return cur
 
         result = {}
         for k in query_keys:
-            if(k in cur):
+            if k in cur:
                 result[k] = cur[k]
             else:
                 result[k] = None

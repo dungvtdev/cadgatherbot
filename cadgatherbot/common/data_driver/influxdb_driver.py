@@ -8,7 +8,7 @@ from cadgatherbot.utils.dbdriver import BaseResourcesDBDriver
 import cadgatherbot.config as config
 
 
-def fetchUrl(url):
+def fetch_url(url):
     try:
         return urllib2.urlopen(url).read()
     except (urllib2.URLError, urllib2.HTTPError):
@@ -54,8 +54,8 @@ class InfluxdbDataDriver(BaseResourcesDBDriver):
 
         # print(links)
         json_list = []
-        for body in self.pool.imap(fetchUrl, links):
-            if(body):
+        for body in self.pool.imap(fetch_url, links):
+            if body:
                 json_list.append(body)
 
         return self.combine(json_list, metric)
