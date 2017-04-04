@@ -1,6 +1,7 @@
 import falcon
 import cadgatherbot as api
 
+from cadgatherbot.utils.dbdriver.simpledictdb import SimpleDictDataSource
 
 app = application = falcon.API()
 
