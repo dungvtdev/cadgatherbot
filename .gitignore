@@ -8,3 +8,6 @@ __pycache__/
 
 # ref
 /refs/
+
+# pycharm
+.idea/*
