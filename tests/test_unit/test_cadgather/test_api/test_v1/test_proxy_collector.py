@@ -1,7 +1,8 @@
 import ddt
 import falcon
-from cadgatherbot.utils.testing import base as baseTest
+
 import app
+from utils.testing import base as baseTest
 
 
 @ddt.ddt

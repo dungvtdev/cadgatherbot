@@ -1,11 +1,11 @@
+import json
+import re
+
 import falcon
 from eventlet.green import urllib2
-import json
-
-import re
-from cadgatherbot.utils.dbdriver import BaseResourcesDBDriver
 
 import cadgatherbot.config as config
+from utils.dbdriver import BaseResourcesDBDriver
 
 
 def fetch_url(url):

@@ -1,15 +1,12 @@
-import falcon
-from cadgatherbot.services import InjectionManager as injector
-
 import json
 import re
 
-from cadgatherbot import config
-from cadgatherbot.utils.dbdriver.simple_relationdb import SimpleDictDBDriver
-from cadgatherbot.common.data_driver import InfluxdbDataDriver
+import falcon
 
 import cadgatherbot.config as config
-
+from cadgatherbot.common.data_driver import InfluxdbDataDriver
+from cadgatherbot.services import InjectionManager as injector
+from utils.dbdriver.simple_relationdb import SimpleDictDBDriver
 
 (coreThreadPool,) = injector.inject('CORE_THREAD_POOL')
 

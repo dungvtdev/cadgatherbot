@@ -1,4 +1,4 @@
-from cadgatherbot.utils.injection import BaseInjectionManager
+from utils.injection import BaseInjectionManager
 from . import resources
 
 

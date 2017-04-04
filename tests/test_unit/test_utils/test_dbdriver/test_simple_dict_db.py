@@ -1,7 +1,7 @@
-from cadgatherbot.utils.dbdriver.simple_relationdb import SimpleDictDBDriver
-
 from nose.tools import assert_equal
 from nose.tools import assert_not_equal
+
+from utils.dbdriver.simple_relationdb import SimpleDictDBDriver
 
 DATA = {
     'users': {

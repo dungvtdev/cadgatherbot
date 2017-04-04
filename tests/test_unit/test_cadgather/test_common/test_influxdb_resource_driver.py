@@ -1,5 +1,4 @@
 from nose.tools import assert_equal
-from nose.tools import assert_not_equal
 from nose.tools import assert_in
 from nose.tools import assert_true
 
@@ -41,7 +40,7 @@ class TestInfluxdbResources(object):
     def test_link_generate(self):
         self.influx.setting(protocol='http')
 
-        link = self.influx.get_link("localhost:3000", "cadvisor", "test_query")
+        link = self.influx.get_link("localhost:3000", "test_cadgather", "test_query")
 
         assert_in('http://localhost:3000/query?', link)
-        assert_in('db=cadvisor', link)
+        assert_in('db=test_cadgather', link)
