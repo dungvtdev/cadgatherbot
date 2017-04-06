@@ -12,13 +12,13 @@ from utils.dbdriver.simple_relationdb import SimpleDictDBDriver
 
 
 class MonitoringController(object):
-
     def __init__(self, user_db, resource_db):
         self.user_db = user_db
         self.resource_db = resource_db
 
     def get(self, req, resp, user_id, machine_id, metric, **kwarg):
-        last = None if 'last' not in kwarg else kwarg['last']
+        # last = None if 'last' not in kwarg else kwarg['last']
+        # base = None if 'base' not in kwarg else kwarg['base']
 
         metric = self.parse_metric(metric)
         info = self.user_db.query('endpoint', 'db').key(
@@ -33,7 +33,7 @@ class MonitoringController(object):
         result = self.resource_db.query(endpoint,
                                         db,
                                         metric,
-                                        last=last)
+                                        **kwarg)
 
         data = self.post_process_resources_data(metric, result)
 
@@ -43,7 +43,7 @@ class MonitoringController(object):
 
     def parse_metric(self, metric):
         # hien tai chi ho tro 1 sub partial, ex "cpu_usage_total./docker"
-        if(not metric):
+        if (not metric):
             return []
 
         if not isinstance(metric, list):
@@ -59,21 +59,27 @@ class MonitoringController(object):
 
 
 class MonitoringGather(object):
-
     def __init__(self, user_db, resource_db):
         self.controller = MonitoringController(user_db, resource_db)
 
     def on_get(self, req, resp, user_id):
-        if("machine" not in req.params):
+        if "machine" not in req.params:
             raise falcon.HTTPBadRequest(
                 "Get resources monitoring need machine_id")
 
         machine_id = req.params['machine']
-        last = None if 'last' not in req.params else req.params['last']
+
+        if 'base' in req.params:
+            base = req.params['base']
+            if not match_time_filter_metric(base):
+                raise falcon.HTTPBadRequest(
+                    'The "base" params must match {number}[%s]' % config.TIME_FILTER_METRIC_ALLOWED)
+        else:
+            base = None
 
         if 'last' in req.params:
             last = req.params['last']
-            if not re.match(r'^\d+[%s]$' % config.TIME_FILTER_METRIC_ALLOWED, last):
+            if not match_time_filter_metric(last):
                 raise falcon.HTTPBadRequest(
                     'The "last" params must match {number}[%s]' % config.TIME_FILTER_METRIC_ALLOWED)
         else:
@@ -81,7 +87,12 @@ class MonitoringGather(object):
 
         metric = None if 'metric' not in req.params else req.params['metric']
 
-        self.controller.get(req, resp, user_id, machine_id, metric, last=last)
+        self.controller.get(req, resp, user_id, machine_id, metric, last=last, base=base)
+
+
+def match_time_filter_metric(time_val):
+    return re.match(r'^\d+[%s]$' % config.TIME_FILTER_METRIC_ALLOWED, time_val) is not None
+
 
 _user_db = SimpleDictDBDriver(config.DATA)
 _resource_db = InfluxdbDataDriver(

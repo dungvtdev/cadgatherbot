@@ -20,6 +20,7 @@ def fetch_url(url):
 class InfluxdbDataDriver(BaseResourcesDBDriver):
     epoch = 's'
     time_filter = '>10m'
+    base = None
     time_interval = '2s'
 
     _time_filter_string = ""
@@ -39,12 +40,17 @@ class InfluxdbDataDriver(BaseResourcesDBDriver):
         if 'time_interval' in kwargv:
             self.time_interval = kwargv['time_interval']
 
-    def query(self, endpoint, db_name, metric, last=None):
+    def query(self, endpoint, db_name, metric, **kwarg):
+        last = None if 'last' not in kwarg else kwarg['last']
+        base = None if 'base' not in kwarg else kwarg['base']
+
         if last:
-            self._time_filter_string = self.get_timefilter_string('>' + last)
+            self._time_filter_string = self.get_timefilter_string(base=base, time_filter='>' + last)
             queries = self.get_queries(metric)
         else:
             queries = self.get_queries(metric)
+
+
 
         if not queries:
             return None
@@ -61,37 +67,41 @@ class InfluxdbDataDriver(BaseResourcesDBDriver):
         return self.combine(json_list, metric)
 
     def combine(self, json_list, metric):
-
         # create container object
         result = {}
-        for m in metric:
-            result[m[0]] = {
-                'container': None if len(m) == 1 else m[1],
-                'data': []
-            }
 
-        for json_obj in json_list:
-            p_obj = json.loads(json_obj)
-            res_list = p_obj['results'][0]['series']
-            for res in res_list:
-                lname = res['name']
-                if lname in result:
-                    result_item = result[lname]
-                    # xet ca truong hop khong co tags cua mot so measurement
-                    if 'tags' not in res:
-                        can_add = True
-                        c_container = None
-                    else:
-                        c_container = res['tags']['container_name']
-                        can_add = not result_item['container'] or result_item[
-                            'container'] == c_container
+        try:
 
-                    if can_add:
-                        result_item['data'].append(res)
-                        res['container'] = c_container
-                        map(res.pop, ['name', 'columns'])
-                        if 'tags' in res:
-                            res.pop('tags')
+            for m in metric:
+                result[m[0]] = {
+                    'container': None if len(m) == 1 else m[1],
+                    'data': []
+                }
+
+            for json_obj in json_list:
+                p_obj = json.loads(json_obj)
+                res_list = p_obj['results'][0]['series']
+                for res in res_list:
+                    lname = res['name']
+                    if lname in result:
+                        result_item = result[lname]
+                        # xet ca truong hop khong co tags cua mot so measurement
+                        if 'tags' not in res:
+                            can_add = True
+                            c_container = None
+                        else:
+                            c_container = res['tags']['container_name']
+                            can_add = not result_item['container'] or result_item[
+                                'container'] == c_container
+
+                        if can_add:
+                            result_item['data'].append(res)
+                            res['container'] = c_container
+                            map(res.pop, ['name', 'columns'])
+                            if 'tags' in res:
+                                res.pop('tags')
+        except Exception:
+            pass
 
         return result
 
@@ -150,15 +160,24 @@ class InfluxdbDataDriver(BaseResourcesDBDriver):
 
         return (query, )
 
-    def get_timefilter_string(self, default='>10m'):
-        tf = self.time_filter or default
+    def get_timefilter_string(self, base=None, time_filter=None):
+        tf = time_filter or self.time_filter
         pattern = r'(^[><]*[=]*)\s*(\d+[%s])$' % config.TIME_FILTER_METRIC_ALLOWED
 
         match = re.match(pattern, tf)
         if not match:
-            match = re.match(pattern, default)
+            match = re.match(pattern, time_filter)
 
-        return 'time ' + match.groups()[0] + " now() - " + match.groups()[1]
+        base = base or self.base
+        if not base:
+            base = 'now()'
+        else:
+            pt = r'^\d+[%s]$' % config.TIME_FILTER_METRIC_ALLOWED
+            if not re.match(pt, base):
+                base = 'now()'
+
+        return 'time %s %s - %s' % (match.groups()[0], base, match.groups()[1])
+        # return 'time ' + match.groups()[0] + " now() - " + match.groups()[1]
 
 
 # class ResourceData(object):
