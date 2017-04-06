@@ -19,9 +19,8 @@ def fetch_url(url):
 
 class InfluxdbDataDriver(BaseResourcesDBDriver):
     epoch = 's'
-    time_filter = '>10m'
-    base = None
-    time_interval = '2s'
+    last = '10m'
+    mean_duration = '2s'
 
     _time_filter_string = ""
 
@@ -34,23 +33,21 @@ class InfluxdbDataDriver(BaseResourcesDBDriver):
         super(InfluxdbDataDriver, self).setting(**kwargv)
         if 'epoch' in kwargv:
             self.epoch = kwargv['epoch']
-        if 'time_filter' in kwargv:
-            self.time_filter = kwargv['time_filter']
+        if 'last' in kwargv:
+            self.last = kwargv['last']
             self._time_filter_string = self.get_timefilter_string()
-        if 'time_interval' in kwargv:
-            self.time_interval = kwargv['time_interval']
+        if 'mean_duration' in kwargv:
+            self.mean_duration = kwargv['mean_duration']
 
     def query(self, endpoint, db_name, metric, **kwarg):
         last = None if 'last' not in kwarg else kwarg['last']
         base = None if 'base' not in kwarg else kwarg['base']
 
         if last:
-            self._time_filter_string = self.get_timefilter_string(base=base, time_filter='>' + last)
+            self._time_filter_string = self.get_timefilter_string(base=base, last=last)
             queries = self.get_queries(metric)
         else:
             queries = self.get_queries(metric)
-
-
 
         if not queries:
             return None
@@ -92,7 +89,7 @@ class InfluxdbDataDriver(BaseResourcesDBDriver):
                         else:
                             c_container = res['tags']['container_name']
                             can_add = not result_item['container'] or result_item[
-                                'container'] == c_container
+                                                                          'container'] == c_container
 
                         if can_add:
                             result_item['data'].append(res)
@@ -134,9 +131,9 @@ class InfluxdbDataDriver(BaseResourcesDBDriver):
         measurements = ','.join(map(lambda x: x[0], cpu_metrics))
 
         query = "SELECT derivative(\"value\", 5s)/1000000000 " \
-            "FROM {measurements} " \
-            "WHERE {timeFilter} " \
-            "GROUP BY \"container_name\" fill(null)"
+                "FROM {measurements} " \
+                "WHERE {timeFilter} " \
+                "GROUP BY \"container_name\" fill(null)"
 
         query = query.format(measurements=measurements, timeFilter=time_filter)
 
@@ -148,37 +145,33 @@ class InfluxdbDataDriver(BaseResourcesDBDriver):
 
         time_filter = self._time_filter_string
         measurements = ','.join(map(lambda x: x[0], metrics))
-        time_interval = self.time_interval
+        time_interval = self.mean_duration
 
         query = "SELECT mean(\"value\") " \
-            "FROM {measurements} " \
-            "WHERE {timeFilter} " \
-            "GROUP BY time({timeInterval}) fill(null)"
+                "FROM {measurements} " \
+                "WHERE {timeFilter} " \
+                "GROUP BY time({timeInterval}) fill(null)"
 
         query = query.format(measurements=measurements,
                              timeFilter=time_filter, timeInterval=time_interval)
 
-        return (query, )
+        return (query,)
 
-    def get_timefilter_string(self, base=None, time_filter=None):
-        tf = time_filter or self.time_filter
-        pattern = r'(^[><]*[=]*)\s*(\d+[%s])$' % config.TIME_FILTER_METRIC_ALLOWED
+    def get_timefilter_string(self, base=None, last=None):
+        last = last or self.last
+        pattern = r'^(\d+[%s])$' % config.TIME_FILTER_METRIC_ALLOWED
 
-        match = re.match(pattern, tf)
+        match = re.match(pattern, last)
         if not match:
-            match = re.match(pattern, time_filter)
+            last = self.last
 
-        base = base or self.base
-        if not base:
-            base = 'now()'
-        else:
+        base = base
+        if base:
             pt = r'^\d+[%s]$' % config.TIME_FILTER_METRIC_ALLOWED
-            if not re.match(pt, base):
-                base = 'now()'
+            if re.match(pt, base):
+                return "time > %s - %s AND time < %s" % (base, last, base)
 
-        return 'time %s %s - %s' % (match.groups()[0], base, match.groups()[1])
-        # return 'time ' + match.groups()[0] + " now() - " + match.groups()[1]
-
+        return 'time > now() - %s' % last
 
 # class ResourceData(object):
 #     measurement = None,

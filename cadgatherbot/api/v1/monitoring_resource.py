@@ -43,7 +43,7 @@ class MonitoringController(object):
 
     def parse_metric(self, metric):
         # hien tai chi ho tro 1 sub partial, ex "cpu_usage_total./docker"
-        if (not metric):
+        if not metric:
             return []
 
         if not isinstance(metric, list):
@@ -98,8 +98,8 @@ _user_db = SimpleDictDBDriver(config.DATA)
 _resource_db = InfluxdbDataDriver(
     coreThreadPool,
     epoch=config.RESOURCE_DATA_EPOCH,
-    time_filter='>' + config.RESOURCE_DATA_CHUNK_DURATION,
-    time_interval=str(config.INTERVAL_SERIES_IN_SECOND) + 's')
+    last=config.RESOURCE_DATA_CHUNK_DURATION,
+    mean_duration=str(config.INTERVAL_SERIES_IN_SECOND) + 's')
 
 routes_map = {
     'resources_monitoring/users/{user_id}': MonitoringGather(_user_db, _resource_db)

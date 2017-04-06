@@ -14,14 +14,14 @@ class TestInfluxdbResources(object):
         del self.influx
 
     def test_time_filter(self):
-        self.influx.setting(time_filter='>10m')
+        self.influx.setting(last='10m')
         assert_equal(self.influx._time_filter_string, 'time > now() - 10m')
 
-        self.influx.setting(time_filter='>=10h')
-        assert_equal(self.influx._time_filter_string, 'time >= now() - 10h')
+        self.influx.setting(last='10h')
+        assert_equal(self.influx._time_filter_string, 'time > now() - 10h')
 
-        self.influx.setting(time_filter='=10s')
-        assert_equal(self.influx._time_filter_string, 'time = now() - 10s')
+        self.influx.setting(last='10s')
+        assert_equal(self.influx._time_filter_string, 'time > now() - 10s')
 
     def test_query_cpu(self):
         query = self.influx.get_cpu_queries(
