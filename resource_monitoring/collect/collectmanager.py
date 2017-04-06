@@ -39,5 +39,6 @@ class CollectManager(object):
         self.duration = config.get('duration', self.duration)
         self.query_pattern = config.get('query_pattern', self.query_pattern)
         self.collected_metrics = config.get('collected_metrics', self.collected_metrics)
+        self.backward_time = config.get('backward_time', self.backward_time)
 
 MasterCollector = CollectManager()

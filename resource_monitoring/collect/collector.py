@@ -1,6 +1,11 @@
 import time
 import threading
 import requests
+import json
+
+
+def mean_value(values):
+    return sum(map(lambda x: x[1], values)) * 1.0 / len(values)
 
 
 class Collector(threading.Thread):
@@ -67,10 +72,23 @@ class Collector(threading.Thread):
             return None
 
     def write_data(self, data):
-        print('write data')
+        print(data)
 
     def parse_data_as_influx(self, data):
         print('parse data')
+
+        d = []
+
+        pydata = json.loads(data)
+        cur_time = (self.current_time - self.duration/2)
+        for k, mdata in pydata['data'].items():
+            if mdata['data']:
+                v = mean_value(mdata['data'][0]['values'])
+                s = "%s value=%s %s" %(k, v, cur_time)
+                d.append(s)
+
+        payload = "\n".join(d)
+        return payload
 
     def get_base_query(self):
         query = self.data['query_pattern']
