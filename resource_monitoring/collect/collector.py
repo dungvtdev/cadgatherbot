@@ -1,11 +1,20 @@
 import time
 import threading
+import requests
 
 
 class Collector(threading.Thread):
     data = None,
     running = False,
-    default_duration = 20       # seconds
+    default_duration = 20  # seconds
+
+    duration = 0,
+    endpoint = ""
+    user_id = ""
+    machine_id = ""
+    metrics = []
+
+    current_time = 0
 
     def __init__(self, data):
         threading.Thread.__init__(self)
@@ -14,29 +23,48 @@ class Collector(threading.Thread):
 
     def setting(self, data):
         self.data = data
+        self.duration = self.data.get('duration', self.default_duration) if self.data else self.default_duration
+        self.endpoint = self.data["endpoint"]
+        self.user_id = self.data["user_id"]
+        self.machine_id = self.data["machine_id"]
+        self.current_time = self.data.get('current_time', time.time())
+        self.metrics = self.data['collected_metrics']
 
     def run(self):
-        query = self.get_query()
-        duration = self.data.get('duration', self.default_duration) if self.data else self.default_duration
         self.running = True
+        query = self.get_base_query()
 
         while True:
             if not self.running:
                 break
-
             old_t = time.time()
 
             data = self.get_data(query)
-            str_data = self.parse_data_as_influx(data)
-            self.write_data(str_data)
+            print(data)
 
-            t = duration - (time.time() - old_t)
+            if data:
+                str_data = self.parse_data_as_influx(data)
+                self.write_data(str_data)
+
+            t = self.duration - (time.time() - old_t)
             t = t if t > 0 else 0
 
             time.sleep(t)
+            self.current_time += self.duration
 
     def get_data(self, query):
-        print('get data')
+        payload = {
+            'last': '%ds' % self.duration,
+            'base': '%ds' % self.current_time,
+            'metric': self.metrics
+        }
+        try:
+            r = requests.get(query, params=payload)
+            print(r.url)
+            return r.content
+        except requests.exceptions.RequestException as e:
+            print(e.message)
+            return None
 
     def write_data(self, data):
         print('write data')
@@ -44,5 +72,9 @@ class Collector(threading.Thread):
     def parse_data_as_influx(self, data):
         print('parse data')
 
-    def get_query(self):
-        pass
+    def get_base_query(self):
+        query = self.data['query_pattern']
+        query = query.format(endpoint=self.endpoint,
+                             user_id=self.user_id,
+                             machine_id=self.machine_id)
+        return query
