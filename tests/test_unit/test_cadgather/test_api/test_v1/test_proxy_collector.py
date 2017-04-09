@@ -33,7 +33,7 @@ class TestProxyCollectorEntry(baseTest.TestBase):
     def test_return_400_when_last_param_go_wrong(self):
         path = self.entry_path + '/users/1'
         self.simulate_get(path, query_string="machine=1&last=>123")
-        self.assertRaises(falcon.HTTPBadRequest)
+        self.assert_simulate_raise(exception_class=falcon.HTTPBadRequest, message_in="last")
 
     def tearDown(self):
         super(TestProxyCollectorEntry, self).tearDown()
